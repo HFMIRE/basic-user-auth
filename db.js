@@ -16,5 +16,5 @@ const sequelize = new Sequelize({
  }, {sequelize,
      modelName:"User", 
     })
-    sequelize.sync({ force: true});
+    sequelize.sync();
  module.exports = { sequelize, User }
