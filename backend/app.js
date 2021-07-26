@@ -2,21 +2,28 @@ const express = require("express");
 const { User } = require("./db");
 const bcyrpt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cors = require("cors");
 require("dotenv").config();
 const app = express();
 const port = 5000;
 app.use(express.json());
+app.use(cors());
 
 app.post("/users", async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, password } = req.body;
   const passwordHash = await bcyrpt.hash(password, 10);
-  await User.create({ username, email, passwordHash });
+  await User.create({ username, passwordHash });
   res.sendStatus(201);
 });
 
 app.post("/login", async (req, res) => {
-  const { username, email, password } = req.body;
-  const userRecord = await User.findOne({ where: [{ username }, { email }] });
+  try {
+    const { username, password } = req.body;
+    const userRecord = await User.findOne({ where: { username } });
+  } catch (err) {
+    console.log(err);
+  }
+
   console.log(userRecord);
   const verfiyUser = await bcyrpt.compare(password, userRecord.passwordHash);
   if (verfiyUser) {
