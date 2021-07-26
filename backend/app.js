@@ -8,18 +8,22 @@ const port = 5000;
 app.use(express.json());
 
 app.post("/users", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
   const passwordHash = await bcyrpt.hash(password, 10);
-  await User.create({ username, passwordHash });
+  await User.create({ username, email, passwordHash });
   res.sendStatus(201);
 });
 
 app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  const userRecord = await User.findOne({ where: { username } });
+  const { username, email, password } = req.body;
+  const userRecord = await User.findOne({ where: [{ username }, { email }] });
+  console.log(userRecord);
   const verfiyUser = await bcyrpt.compare(password, userRecord.passwordHash);
   if (verfiyUser) {
-    const token = jwt.sign({ username, password }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      { username, email, password },
+      process.env.JWT_SECRET
+    );
     return res.send(token);
   } else {
     res.sendStatus(404);
